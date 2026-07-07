@@ -12,6 +12,8 @@
   // Lib
   import { cn } from '$lib/utils';
 
+  import HabitDifficultyBadge from './difficulty.badge.svelte';
+
   import { ALL_ICONS } from './consts';
 
   const index = Math.floor(Math.random() * ALL_ICONS.length);
@@ -20,9 +22,9 @@
   const completed = $state(faker.datatype.boolean({ probability: 0.5 }));
   const title = $state(faker.lorem.words());
   const difficulty = faker.helpers.weightedArrayElement([
-    {weight: 1, value: 'Easy'},
-    {weight: 1, value: 'Medium'},
-    {weight: 1, value: 'Hard'},
+    {weight: 1, value: 'easy'},
+    {weight: 1, value: 'medium'},
+    {weight: 1, value: 'hard'},
   ]);
   const xp = faker.helpers.weightedArrayElement([
     {weight: 1, value: '10'},
@@ -59,7 +61,7 @@
       </div>
 
       <div class="flex gap-4">
-        <Badge variant="destructive">{difficulty}</Badge>
+        <HabitDifficultyBadge value={difficulty} />
         <span class="text-green-500">+{xp} XP</span>
       </div>
     </div>
