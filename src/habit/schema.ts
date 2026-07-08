@@ -25,14 +25,9 @@ const commonFields = z.object({
   difficulty: z.enum(difficulties, {
     error: () => ({ message: 'Please select a difficulty' })
   }),
-  reminder: z.preprocess((v) => (v === '' || v === undefined ? undefined : v),
-    z.string()
-      .regex(
-        /^([01]\d|2[0-3]):[0-5]\d$/,
-        'Reminder must be in HH:MM format (e.g. 08:30)'
-      )
-      .optional(),
-  ),
+  reminder: z.string()
+    .transform((v) => (v === '' || v === undefined ? undefined : v))
+    .pipe(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional()),
   notes: z
     .string()
     .max(500, 'Notes must be 500 characters or less')
@@ -64,5 +59,5 @@ const typeSpecific = z.discriminatedUnion('type', [
 ]);
 
 export const createHabitFormSchema = commonFields.and(typeSpecific);
-export type CreateHabitFormSchema = z.infer<typeof createHabitFormSchema>
+export type CreateHabitFormSchema = typeof createHabitFormSchema
 

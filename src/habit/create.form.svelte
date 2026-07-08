@@ -1,5 +1,15 @@
 <script lang="ts" module>
+  import {
+    type SuperValidated,
+    type Infer,
+    superForm,
+  } from 'sveltekit-superforms';
+
+  // Schema
+  import type { CreateHabitFormSchema } from './schema';
+
   interface Props {
+    form: SuperValidated<Infer<CreateHabitFormSchema>>
     step?: number;
     onchangestep?(step: number): void;
   }
@@ -12,6 +22,7 @@
     Bell,
   } from '@lucide/svelte';
   import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
+  import { zod4Client } from 'sveltekit-superforms/adapters';
 
   // Packages
   import Calendar from '$lib/components/ui/calendar/calendar.svelte';
@@ -25,6 +36,9 @@
   import * as Select from '$lib/components/ui/select';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
 
+  // Schema
+  import { createHabitFormSchema } from './schema';
+
   import {
     COLORS,
     DAYS,
@@ -35,7 +49,7 @@
     TYPES,
   } from './consts';
 
-  let { step = 1, onchangestep }: Props = $props();
+  let { form: initialForm, step = 1, onchangestep }: Props = $props();
 
   let todayDate = today(getLocalTimeZone());
 
@@ -71,9 +85,15 @@
 
     onchangestep?.(s);
   };
+
+  const form = superForm(initialForm, {
+    validators: zod4Client(createHabitFormSchema),
+  });
+
+  const { form: formData, enhance } = form;
 </script>
 
-<form>
+<form method="POST" use:enhance>
   {#if step === 1}
     <Field.Group>
       <Field.Field>

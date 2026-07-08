@@ -16,6 +16,8 @@
 
   import { ALL_ICONS, ICONS } from './consts';
 
+  let { data }: Props = $props();
+
   let icon = $state(ICONS[0].name);
   let currentStep = $state(1);
 
@@ -76,7 +78,7 @@
           </Card.Title>
         </Card.Header>
         <Card.Content>
-          <HabitCreateForm step={currentStep} onchangestep={handleChangeStep} />
+          <HabitCreateForm form={data.form} step={currentStep} onchangestep={handleChangeStep} />
         </Card.Content>
       </Card.Root>
     </div>
