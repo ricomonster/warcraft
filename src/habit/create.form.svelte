@@ -60,7 +60,6 @@
   let target = $state(1);
   let alignment = $state('');
 
-  let duedateValue = $state(DUEDATE_OPTIONS[0].value);
   let duedate = $state<CalendarDate | undefined>(new CalendarDate(todayDate.year, todayDate.month, todayDate.day));
 
   let difficulty = $state(DIFFICULTY[1].value);
@@ -77,6 +76,16 @@
 
   const switchStep = (selected: number): void => {
     let s = selected;
+
+    // switch (s) {
+    //   case 2:
+    //     // generate questified name
+    //     break;
+    //   case 4:
+    //     // determine the difficulty
+    //     break;
+    // }
+
     if (selected < 1) {
       s = 1;
     } else if (selected > 4) {
@@ -91,6 +100,14 @@
   });
 
   const { form: formData, enhance } = form;
+
+  $effect(() => {
+    if ($formData.dailyReminder && !$formData.remindTimeAt) {
+      $formData.remindTimeAt = '09:00';
+    } else if (!$formData.dailyReminder && $formData.remindTimeAt) {
+      $formData.remindTimeAt = '';
+    }
+  });
 </script>
 
 <form method="POST" use:enhance>
@@ -241,14 +258,14 @@
       </Field.Group>
     {/if}
 
-    {#if type === 'todo'}
+    {#if $formData.type === 'todo'}
       <Field.Group>
         <Field.Field>
           <Field.Label for="due_date">Set a deadline for this quest?</Field.Label>
           <Field.Description>No rush. Leave it open if there's no expiry.</Field.Description>
         </Field.Field>
 
-        <ToggleGroup.Root type="single" bind:value={duedateValue} class="grid grid-cols-5" variant="outline" spacing={2}>
+        <ToggleGroup.Root type="single" bind:value={$formData.dueDateType} class="grid grid-cols-5" variant="outline" spacing={2}>
           {#each DUEDATE_OPTIONS as ddo, index (index)}
             <ToggleGroup.Item
               value={ddo.value}
@@ -260,7 +277,7 @@
           {/each}
         </ToggleGroup.Root>
 
-        {#if duedateValue === 'custom'}
+        {#if $formData.dueDateType === 'custom'}
           <Calendar
             type="single"
             bind:value={duedate}
@@ -312,7 +329,7 @@
             </div>
 
             <Card.Action>
-              <Switch />
+              <Switch bind:checked={$formData.dailyReminder} />
             </Card.Action>
           </Card.Header>
 
