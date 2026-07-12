@@ -28,6 +28,8 @@
     "@types/pg": "^8.20.0",
     "bits-ui": "^2.16.3",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^1.0.0-rc.4",
     "eslint": "^10.5.0",
     "eslint-plugin-svelte": "^3.19.0",
     "formsnap": "^2.0.1",
@@ -53,6 +55,7 @@
     "postcss-load-config": "^4.0.0"
   },
   "dependencies": {
-    "@faker-js/faker": "^10.5.0"
+    "@faker-js/faker": "^10.5.0",
+    "drizzle-orm": "^1.0.0-rc.4"
   }
 }

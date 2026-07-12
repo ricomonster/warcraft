@@ -1,0 +1,317 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "6b0dbcc5-335e-4b1b-9e87-3ee079fc6cb1",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "values": [
+        "buff",
+        "nerf",
+        "none"
+      ],
+      "name": "alignment",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ],
+      "name": "days",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "name": "difficulty",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "today",
+        "tomorrow",
+        "3days",
+        "next_week",
+        "custom"
+      ],
+      "name": "due_date_type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "daily",
+        "habit",
+        "todo"
+      ],
+      "name": "type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "quests",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quest",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "varchar(20)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "color",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "varchar(20)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "difficulty",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "difficulty",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "daily_reminder",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "time(0)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "remind_time_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 1,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "remind_days_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "notes",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "type",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "days",
+      "typeSchema": "public",
+      "notNull": false,
+      "dimensions": 1,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "days",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "name": "target",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "alignment",
+      "typeSchema": "public",
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "alignment",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "due_date_type",
+      "typeSchema": "public",
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "due_date_type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "due_date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "quests"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "quests_pkey",
+      "schema": "public",
+      "table": "quests",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}
