@@ -155,6 +155,14 @@ export const DAYS = [
   {name: 'Su', value: 'sunday'},
 ];
 
+export const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+export const WEEKENDS = ['saturday', 'sunday'];
+
+export const WEEKDAY_SET = new Set(WEEKDAYS);
+export const WEEKEND_SET = new Set(WEEKENDS);
+
+export const DAY_SHORT = Object.fromEntries(DAYS.map(d => [d.value, d.name])) as Record<string, string>;
+
 export const DEADLINE_OPTIONS = [
   {label: '(+) Strength gain (eg. drink water)', value: 'buff'},
   {label: '(-) Curse/debuff (eg. smoking)', value: 'nerf'},
@@ -174,3 +182,4 @@ export const DIFFICULTY = [
   {label: 'Medium', value: 'medium'},
   {label: 'Hard', value: 'hard'},
 ];
+

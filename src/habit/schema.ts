@@ -1,13 +1,7 @@
 import { z } from 'zod';
 
 // Consts
-import {
-  ALL_ICONS,
-  COLORS,
-  DAYS,
-  DEADLINE_OPTIONS,
-  DIFFICULTY,
-} from './consts';
+import { COLORS, ALL_ICONS, DEADLINE_OPTIONS, DIFFICULTY, DAYS, DUEDATE_OPTIONS } from './consts';
 
 // Enum form schema
 // const types = TYPES.map((t) => t.value) as [string, ...string[]];
@@ -15,6 +9,7 @@ const icons = ALL_ICONS.map((a) => a.name) as [string, ...string[]];
 const alignments = DEADLINE_OPTIONS.map((d) => d.value) as [string, ...string[]];
 const difficulties = DIFFICULTY.map((d) => d.value) as [string, ...string[]];
 const days  = DAYS.map((d) => d.value) as [string, ...string[]];
+const duedates = DUEDATE_OPTIONS.map((d) => d.value) as [string, ...string[]];
 
 const commonFields = z.object({
   quest: z.string()
@@ -32,15 +27,23 @@ const commonFields = z.object({
   difficulty: z.enum(difficulties, {
     error: () => ({ message: 'Please select a difficulty' })
   }),
-  reminder: z.string()
-    .transform((v) => (v === '' || v === undefined ? undefined : v))
-    .pipe(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional()),
-  reminderDays: z.array(z.enum(days)),
+  dailyReminder: z.boolean().default(false),
+  remindTimeAt: z.string().optional().refine(
+    (v) => !v || /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+    { message: 'Invalid time format (HH:MM)' }
+  ),
+  remindDaysAt: z.array(z.enum(days)).optional(),
   notes: z
     .string()
     .max(500, 'Notes must be 500 characters or less')
     .optional()
-});
+}).refine(
+  (data) => !data.dailyReminder || (data.remindDaysAt !== undefined && data.remindDaysAt.length > 0),
+  { message: 'Select at least one day for your daily reminder', path: ['remindDaysAt'] }
+).refine(
+  (data) => !data.dailyReminder || !!data.remindTimeAt,
+  { message: 'Set a time for your daily reminder', path: ['remindTimeAt'] }
+);
 
 // Type specific fields
 const typeSpecific = z.discriminatedUnion('type', [
@@ -65,7 +68,8 @@ const typeSpecific = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('todo'),
-    duedate: z.string().optional()
+    dueDateType: z.enum(duedates as [string, ...string[]]),
+    dueDate: z.string().optional(),
   })
 ]);
 

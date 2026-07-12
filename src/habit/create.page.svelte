@@ -20,10 +20,10 @@
 
   let icon = $state(ICONS[0].name);
   let currentStep = $state(1);
+  let quest = $state('Quest name');
 
   const handleChangeStep = (step: number): void => {
     currentStep = step;
-    console.log(currentStep);
   };
 </script>
 
@@ -66,7 +66,7 @@
             </Stepper.Item>
           </Stepper.Nav>
 
-          <Card.Title class="flex gap-2 items-center">
+          <Card.Title class="flex gap-4 items-center">
             {#each ALL_ICONS as ic, index (index)}
               {#if ic.name === icon}
                 {@const SelectedIcon = ic.icon}
@@ -74,11 +74,15 @@
               {/if}
             {/each}
 
-            <span class="text-xl">Quest name</span>
+            <span class="text-xl">{quest}</span>
           </Card.Title>
         </Card.Header>
         <Card.Content>
-          <HabitCreateForm form={data.form} step={currentStep} onchangestep={handleChangeStep} />
+          <HabitCreateForm
+            form={data.form}
+            step={currentStep}
+            onchangestep={handleChangeStep}
+            onquest={(name) => quest = name}/>
         </Card.Content>
       </Card.Root>
     </div>

@@ -2,17 +2,30 @@
   import {
     type SuperValidated,
     type Infer,
+    type FormPathLeaves,
     superForm,
   } from 'sveltekit-superforms';
+  import type { z } from 'zod';
 
   // Schema
   import type { CreateHabitFormSchema } from './schema';
+  import { createHabitFormSchema } from './schema';
+
+  type FormSchema = z.infer<typeof createHabitFormSchema>
 
   interface Props {
     form: SuperValidated<Infer<CreateHabitFormSchema>>
     step?: number;
     onchangestep?(step: number): void;
+    onquest?(name: string): void;
   }
+
+  const STEP_FIELDS: Record<number, FormPathLeaves<FormSchema>[]> = {
+    1: ['name', 'color', 'icon'],
+    2: ['type'],
+    3: ['target', 'alignment', 'dueDateType', 'dueDate'],
+    4: ['difficulty', 'dailyReminder', 'remindTimeAt']
+  };
 </script>
 
 <script lang="ts">
@@ -25,6 +38,9 @@
   import { zod4Client } from 'sveltekit-superforms/adapters';
 
   // Packages
+  import { questify } from '$package/quest';
+
+  // Lib
   import Calendar from '$lib/components/ui/calendar/calendar.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
@@ -35,9 +51,10 @@
   import * as Form from '$lib/components/ui/form';
   import * as Select from '$lib/components/ui/select';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
+  import { cn } from '$lib/utils';
 
-  // Schema
-  import { createHabitFormSchema } from './schema';
+  // Utils
+  import { formatDayLabel } from './util';
 
   import {
     COLORS,
@@ -47,14 +64,14 @@
     DUEDATE_OPTIONS,
     ICONS,
     TYPES,
+    WEEKDAYS,
   } from './consts';
 
-  let { form: initialForm, step = 1, onchangestep }: Props = $props();
+  let { form: initialForm, step = 1, onchangestep, onquest }: Props = $props();
 
   let todayDate = today(getLocalTimeZone());
 
 
-  let duedateValue = $state(DUEDATE_OPTIONS[0].value);
   let duedate = $state<CalendarDate | undefined>(new CalendarDate(todayDate.year, todayDate.month, todayDate.day));
 
   const adjustTarget = (event: MouseEvent, delta: number): void => {
@@ -67,8 +84,43 @@
     $formData.target = Math.max(1, Math.min(99, current + delta));
   };
 
-  const switchStep = (selected: number): void => {
+  const switchStep = async (selected: number): Promise<void> => {
     let s = selected;
+
+    // Validate current step
+    if (selected > step) {
+      if (step === 4 && $formData.type === 'daily') {
+        if (!$formData.days || $formData.days.length === 0) {
+          $errors.days = { _errors: ['Select at least one day'] };
+          return;
+        }
+        $errors.days = undefined;
+      }
+
+      const fields = STEP_FIELDS[step] ?? [];
+      for (const field of fields) {
+        const errors = await form.validate(field, { update: true });
+        if (errors) {
+          return;
+        }
+      }
+    }
+
+    switch (s) {
+      case 2: {
+        // generate questified name
+        if ($formData.quest === '') {
+          $formData.quest = questify($formData.name);
+          onquest?.($formData.quest);
+        }
+        break;
+      }
+
+      case 3:
+      case 4:
+        break;
+    }
+
     if (selected < 1) {
       s = 1;
     } else if (selected > 4) {
@@ -80,105 +132,118 @@
 
   const form = superForm(initialForm, {
     validators: zod4Client(createHabitFormSchema),
+    dataType: 'json',
   });
 
-  const { form: formData, enhance } = form;
+  const { form: formData, enhance, allErrors, errors } = form;
+
+  $effect(() => {
+    if ($formData.dailyReminder && !$formData.remindTimeAt) {
+      $formData.remindTimeAt = '09:00';
+      $formData.remindDaysAt = WEEKDAYS;
+    } else if (!$formData.dailyReminder && $formData.remindTimeAt) {
+      $formData.remindTimeAt = '';
+      $formData.remindDaysAt = [];
+    }
+
+    if ($formData.type === 'daily' && $formData.days.length < 1) {
+      $formData.days = WEEKDAYS;
+    }
+
+    console.log($allErrors);
+  });
 </script>
 
-<form method="POST" use:enhance>
-  {#if step === 1}
-    <Field.Group>
-      <Form.Field {form} name="name">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label for="name">Name your quest</Form.Label>
-            <Form.Description>
-              What challenge are you taking on?
-            </Form.Description>
-            <Input {...props} type="input" placeholder="Do laundry, read a book" required bind:value={$formData.name} />
-            <Form.FieldErrors />
-          {/snippet}
-        </Form.Control>
-      </Form.Field>
+<form method="POST" use:enhance novalidate>
+  <Field.Group class={cn(step === 1 ? '' : 'hidden')}>
+    <Form.Field {form} name="name">
+      <Form.Control>
+        {#snippet children({ props })}
+          <Form.Label for="name">Name your quest</Form.Label>
+          <Form.Description>
+            What challenge are you taking on?
+          </Form.Description>
+          <Input {...props} type="input" placeholder="Do laundry, read a book" required bind:value={$formData.name} />
+          <Form.FieldErrors />
+        {/snippet}
+      </Form.Control>
+    </Form.Field>
 
-      <Form.Field {form} name="color">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label for="color">Color</Form.Label>
-            <ToggleGroup.Root {...props} type="single" class="flex gap-2" spacing={2} size="sm" bind:value={$formData.color}>
-              {#each COLORS as color, index (index)}
-                <ToggleGroup.Item
-                  value={color}
-                  aria-label="Toggle star"
-                  class="w-8 h-8 rounded-full border-3 border-transparent data-[state=on]:border-foreground"
-                  style="background:{color}"
-                />
-              {/each}
-            </ToggleGroup.Root>
-          {/snippet}
-        </Form.Control>
-      </Form.Field>
+    <Form.Field {form} name="color">
+      <Form.Control>
+        {#snippet children({ props })}
+          <Form.Label for="color">Color</Form.Label>
+          <ToggleGroup.Root {...props} type="single" class="flex gap-2" spacing={2} size="sm" bind:value={$formData.color}>
+            {#each COLORS as color, index (index)}
+              <ToggleGroup.Item
+                value={color}
+                aria-label="Toggle star"
+                class="w-8 h-8 rounded-full border-3 border-transparent data-[state=on]:border-foreground"
+                style="background:{color}"
+              />
+            {/each}
+          </ToggleGroup.Root>
+        {/snippet}
+      </Form.Control>
+    </Form.Field>
 
-      <Form.Field {form} name="color">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label for="icon">Icon</Form.Label>
-            <ToggleGroup.Root {...props} type="single" class="grid grid-cols-7 gap-2" spacing={2} size="sm" variant="outline" bind:value={$formData.icon}>
-              {#each ICONS as icon, index (index)}
-                {@const Icon = icon.icon}
-                <ToggleGroup.Item value={icon.name}>
+    <Form.Field {form} name="icon">
+      <Form.Control>
+        {#snippet children({ props })}
+          <Form.Label for="icon">Icon</Form.Label>
+          <ToggleGroup.Root {...props} type="single" class="flex flex-wrap gap-2" spacing={2} size="sm" variant="outline" bind:value={$formData.icon}>
+            {#each ICONS as icon, index (index)}
+              {@const Icon = icon.icon}
+              <ToggleGroup.Item value={icon.name}>
+                <Icon />
+              </ToggleGroup.Item>
+            {/each}
+          </ToggleGroup.Root>
+        {/snippet}
+      </Form.Control>
+    </Form.Field>
+
+    <div class="ml-auto">
+      <Button onclick={(e) => {e.preventDefault(); switchStep(2);}}>Next</Button>
+    </div>
+  </Field.Group>
+
+  <Field.Group class={cn(step === 2 ? '' : 'hidden')}>
+    <Form.Field {form} name="type">
+      <Form.Control>
+        {#snippet children({ props })}
+          <Form.Label for="type">Choose your battle type</Form.Label>
+          <Form.Description>This decides how the battle unfolds.</Form.Description>
+
+          <ToggleGroup.Root {...props} type="single" bind:value={$formData.type} class="flex flex-col w-full gap-2" variant="outline" spacing={1}>
+            {#each TYPES as type, index (index)}
+              {@const Icon = type.icon}
+              <ToggleGroup.Item
+                value={type.value}
+                aria-label="Toggle type"
+                class="flex items-start gap-3 p-3 h-auto justify-start text-left w-full"
+              >
+                <div class="w-8 h-8 rounded-md flex items-center justify-center {type.bg}">
                   <Icon />
-                </ToggleGroup.Item>
-              {/each}
-            </ToggleGroup.Root>
-          {/snippet}
-        </Form.Control>
-      </Form.Field>
+                </div>
+                <div>
+                  <p class="text-sm font-medium data-[state=on]:text-primary">{type.label}</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">{type.desc}</p>
+                </div>
+              </ToggleGroup.Item>
+            {/each}
+          </ToggleGroup.Root>
+        {/snippet}
+      </Form.Control>
+    </Form.Field>
 
-      <div class="ml-auto">
-        <Button onclick={(e) => {e.preventDefault(); switchStep(2);}}>Next</Button>
-      </div>
-    </Field.Group>
-  {/if}
+    <div class="flex justify-between items-center">
+      <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(1);}}>Previous</Button>
+      <Button onclick={(e) => {e.preventDefault(); switchStep(3);}}>Next</Button>
+    </div>
+  </Field.Group>
 
-  {#if step === 2}
-    <Field.Group>
-      <Form.Field {form} name="type">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label for="type">Choose your battle type</Form.Label>
-            <Form.Description>This decides how the battle unfolds.</Form.Description>
-
-            <ToggleGroup.Root {...props} type="single" bind:value={$formData.type} class="flex flex-col w-full gap-2" variant="outline" spacing={1}>
-              {#each TYPES as type, index (index)}
-                {@const Icon = type.icon}
-                <ToggleGroup.Item
-                  value={type.value}
-                  aria-label="Toggle type"
-                  class="flex items-start gap-3 p-3 h-auto justify-start text-left w-full"
-                >
-                  <div class="w-8 h-8 rounded-md flex items-center justify-center {type.bg}">
-                    <Icon />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium data-[state=on]:text-primary">{type.label}</p>
-                    <p class="text-xs text-muted-foreground mt-0.5">{type.desc}</p>
-                  </div>
-                </ToggleGroup.Item>
-              {/each}
-            </ToggleGroup.Root>
-          {/snippet}
-        </Form.Control>
-      </Form.Field>
-
-      <div class="flex justify-between items-center">
-        <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(1);}}>Previous</Button>
-        <Button onclick={(e) => {e.preventDefault(); switchStep(3);}}>Next</Button>
-      </div>
-    </Field.Group>
-  {/if}
-
-  {#if step === 3}
+  <div class={cn(step === 3 ? '' : 'hidden')}>
     {#if $formData.type === 'daily'}
       <Field.Group>
         <Form.Field {form} name="days">
@@ -187,7 +252,7 @@
               <Form.Label for="days">Choose your battle days</Form.Label>
               <Form.Description>Taps to toggle day you'll face this quest.</Form.Description>
 
-              <ToggleGroup.Root {...props} type="multiple" bind:value={$formData.days} class="grid grid-cols-7" variant="outline" spacing={2}>
+              <ToggleGroup.Root {...props} type="multiple" bind:value={$formData.days} class="flex flex-wrap gap-2" variant="outline" spacing={2}>
                 {#each DAYS as day, index (index)}
                   <ToggleGroup.Item
                     value={day.value}
@@ -198,6 +263,8 @@
                   </ToggleGroup.Item>
                 {/each}
               </ToggleGroup.Root>
+
+              <Form.FieldErrors />
             {/snippet}
           </Form.Control>
         </Form.Field>
@@ -215,6 +282,7 @@
               </div>
 
               <input type="hidden" bind:value={$formData.target} {...props} />
+              <Form.FieldErrors />
             {/snippet}
           </Form.Control>
         </Form.Field>
@@ -230,7 +298,7 @@
               <Form.Description>Does it strengthen you, weaken, or both?</Form.Description>
 
               <Select.Root type="single" name="alignment" bind:value={$formData.alignment}>
-                <Select.Trigger {...props} class="w-45">
+                <Select.Trigger {...props} class="w-full">
                   {DEADLINE_OPTIONS.find((d) => d.value === $formData.alignment)?.label ?? '-- Select --'}
                 </Select.Trigger>
                 <Select.Content>
@@ -272,13 +340,13 @@
 
     {#if $formData.type === 'todo'}
       <Field.Group>
-        <Form.Field {form} name="duedate">
+        <Form.Field {form} name="dueDateType">
           <Form.Control>
             {#snippet children({ props })}
               <Form.Label for="duedate">Set a deadline for this quest?</Form.Label>
               <Form.Description>No rush. Leave it open if there's no expiry.</Form.Description>
 
-              <ToggleGroup.Root type="single" bind:value={$formData.duedate} class="grid grid-cols-5" variant="outline" spacing={2}>
+              <ToggleGroup.Root type="single" bind:value={$formData.dueDateType} class="grid grid-cols-5" variant="outline" spacing={2}>
                 {#each DUEDATE_OPTIONS as ddo, index (index)}
                   <ToggleGroup.Item
                     value={ddo.value}
@@ -290,14 +358,14 @@
                 {/each}
               </ToggleGroup.Root>
 
-              {#if duedateValue === 'custom'}
+              {#if $formData.dueDateType === 'custom'}
                 <Calendar
                   type="single"
                   bind:value={duedate}
                   class="bg-transparent p-0 [--cell-size:--spacing(9.5)] mx-auto"
                 />
               {/if}
-              <input type="hidden" bind:value={$formData.duedate} {...props} />
+              <input type="hidden" bind:value={$formData.dueDate} {...props} />
             {/snippet}
           </Form.Control>
         </Form.Field>
@@ -308,9 +376,9 @@
       <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(2);}}>Previous</Button>
       <Button onclick={(e) => {e.preventDefault(); switchStep(4);}}>Next</Button>
     </div>
-  {/if}
+  </div>
 
-  {#if step === 4}
+  <div class={cn(step === 4 ? '' : 'hidden')}>
     <Field.Group>
       <Form.Field {form} name="difficulty">
         <Form.Control>
@@ -318,7 +386,7 @@
             <Form.Label for="difficulty">How tough is this foe?</Form.Label>
             <Form.Description>Tougher battles drop more XP when won.</Form.Description>
 
-            <ToggleGroup.Root {...props} type="single" bind:value={$formData.difficulty} class="grid grid-cols-3" variant="outline" spacing={2}>
+            <ToggleGroup.Root {...props} type="single" bind:value={$formData.difficulty} class="grid grid-cols-3 mx-auto" variant="outline" spacing={2}>
               {#each DIFFICULTY as diff, index (index)}
                 <ToggleGroup.Item
                   value={diff.value}
@@ -333,38 +401,54 @@
         </Form.Control>
       </Form.Field>
 
-      <Form.Field {form} name="reminder">
+      <Form.Field {form} name="dailyReminder">
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label for="reminder">Sound the war horn?</Form.Label>
             <Form.Description>We'll send a battle alert at this time each day.</Form.Description>
+            <input type="hidden" {...props} value={$formData.dailyReminder} />
+          {/snippet}
+        </Form.Control>
+      </Form.Field>
 
-            <Card.Root>
-              <Card.Header>
-                <div class="flex items-center gap-4">
-                  <Bell class="size-5 text-muted-foreground" />
-                  <div>
-                    <Card.Title>Daily reminder</Card.Title>
-                    <Card.Description>
-                      8:00AM - Mon-Fri
-                    </Card.Description>
-                  </div>
-                </div>
+      <Card.Root>
+        <Card.Header>
+          <div class="flex items-center gap-4">
+            <Bell class="size-5 text-muted-foreground" />
+            <div>
+              <Card.Title>Daily reminder</Card.Title>
+              <Card.Description>
+                {#if $formData.dailyReminder}
+                  <time>{$formData.remindTimeAt}</time> &bull;
+                  <span>{formatDayLabel($formData.remindDaysAt ?? [])}</span>
+                {:else}
+                  <span>Off</span>
+                {/if}
+              </Card.Description>
+            </div>
+          </div>
 
-                <Card.Action>
-                  <Switch />
-                </Card.Action>
-              </Card.Header>
+          <Card.Action>
+            <Switch bind:checked={$formData.dailyReminder} />
+          </Card.Action>
+        </Card.Header>
 
-              <Card.Content>
-                <Field.Field orientation="horizontal">
-                  <Form.Label for="reminder">Sound the horn at</Form.Label>
-                  <Input type="time" class="w-32" />
-                </Field.Field>
+        {#if $formData.dailyReminder}
+          <Card.Content class="flex flex-col gap-4">
+            <Form.Field {form} name="remindTimeAt">
+              <Form.Control>
+                {#snippet children({ props })}
+                  <Form.Label for="remindTimeAt">Sound the horn at</Form.Label>
+                  <Input {...props} type="time" class="w-32" bind:value={$formData.remindTimeAt} />
+                {/snippet}
+              </Form.Control>
+            </Form.Field>
 
-                <Form.Field {form} name="reminder">
+            <Form.Field {form} name="remindDaysAt">
+              <Form.Control>
+                {#snippet children({ props })}
                   <Form.Label for="reminder">On these battle days</Form.Label>
-                  <ToggleGroup.Root {...props} type="multiple" bind:value={$formData.reminderDays} class="grid grid-cols-7" variant="outline" spacing={2}>
+                  <ToggleGroup.Root {...props} type="multiple" bind:value={$formData.remindDaysAt} class="grid grid-cols-7" variant="outline" spacing={2}>
                     {#each DAYS as day, index (index)}
                       <ToggleGroup.Item
                         value={day.value}
@@ -375,12 +459,12 @@
                       </ToggleGroup.Item>
                     {/each}
                   </ToggleGroup.Root>
-                </Form.Field>
-              </Card.Content>
-            </Card.Root>
-          {/snippet}
-        </Form.Control>
-      </Form.Field>
+                {/snippet}
+              </Form.Control>
+            </Form.Field>
+          </Card.Content>
+        {/if}
+      </Card.Root>
 
       <Form.Field {form} name="notes">
         <Form.Control>
@@ -398,5 +482,5 @@
       <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(3);}}>Previous</Button>
       <Form.Button>Create</Form.Button>
     </div>
-  {/if}
+  </div>
 </form>

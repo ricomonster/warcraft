@@ -1,1 +1,1 @@
-export { load } from '$package/habit/server';
+export { load, actions } from '$package/habit/server';
