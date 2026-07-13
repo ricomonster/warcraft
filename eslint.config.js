@@ -33,6 +33,20 @@ export default ts.config(
     }
   },
   {
+    files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/server', '**/server/**'],
+          message: 'Server-only modules cannot be imported in client-side code.'
+        },{
+          group: ['**/store', '**/store/**'],
+          message: 'Store modules cannot be imported in client-side code. Import types from types.ts instead.'
+        }]
+      }]
+    }
+  },
+  {
     files: [
       '**/*.ts',
       '**/*.svelte',
