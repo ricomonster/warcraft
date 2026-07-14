@@ -2,9 +2,9 @@
   import type { PageData } from './$types';
 
   // Page
-  import { HabitCreatePage } from '$package/habit';
+  import { CreateQuestPage } from '$package/quest';
 
   export let data: PageData;
 </script>
 
-<HabitCreatePage {data} />
+<CreateQuestPage {data} />

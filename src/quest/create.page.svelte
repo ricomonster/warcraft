@@ -1,6 +1,6 @@
 <script lang="ts" module>
   // Interface/Types
-  import type { PageData } from '$routes/habit/create/$types';
+  import type { PageData } from '$routes/quest/create/$types';
 
   interface Props {
     data: PageData
@@ -12,7 +12,7 @@
   import * as Card from '$lib/components/ui/card';
   import * as Stepper from '$lib/components/ui/stepper';
 
-  import HabitCreateForm from './create.form.svelte';
+  import QuestCreateForm from './create.form.svelte';
 
   import { ALL_ICONS, ICONS } from './consts';
 
@@ -78,7 +78,7 @@
           </Card.Title>
         </Card.Header>
         <Card.Content>
-          <HabitCreateForm
+          <QuestCreateForm
             form={data.form}
             step={currentStep}
             onchangestep={handleChangeStep}

@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import type { SubmitFunction } from '@sveltejs/kit';
   import {
     type SuperValidated,
     type Infer,
@@ -8,13 +9,12 @@
   import type { z } from 'zod';
 
   // Schema
-  import type { CreateHabitFormSchema } from './schema';
-  import { createHabitFormSchema } from './schema';
+  import { createQuestFormSchema, type CreateQuestFormSchema } from './schema';
 
-  type FormSchema = z.infer<typeof createHabitFormSchema>
+  type FormSchema = z.infer<typeof createQuestFormSchema>
 
   interface Props {
-    form: SuperValidated<Infer<CreateHabitFormSchema>>
+    form: SuperValidated<Infer<CreateQuestFormSchema>>
     step?: number;
     onchangestep?(step: number): void;
     onquest?(name: string): void;
@@ -23,7 +23,7 @@
   const STEP_FIELDS: Record<number, FormPathLeaves<FormSchema>[]> = {
     1: ['name', 'color', 'icon'],
     2: ['type'],
-    3: ['target', 'alignment', 'dueDateType', 'dueDate'],
+    3: ['target', 'alignment', 'timeframe', 'dueDate'],
     4: ['difficulty', 'dailyReminder', 'remindTimeAt']
   };
 </script>
@@ -59,12 +59,12 @@
   import {
     COLORS,
     DAYS,
-    DEADLINE_OPTIONS,
-    DIFFICULTY,
-    DUEDATE_OPTIONS,
     ICONS,
-    TYPES,
     WEEKDAYS,
+    TYPE_OPTIONS,
+    ALIGNMENT_OPTIONS,
+    TIMEFRAME_OPTIONS,
+    DIFFICULTY_OPTIONS,
   } from './consts';
 
   let { form: initialForm, step = 1, onchangestep, onquest }: Props = $props();
@@ -131,9 +131,17 @@
   };
 
   const form = superForm(initialForm, {
-    validators: zod4Client(createHabitFormSchema),
+    validators: zod4Client(createQuestFormSchema),
     dataType: 'json',
+    onSubmit: ({ cancel }) => {
+      if (step !== 4) {
+        cancel();
+        switchStep(Math.min(step + 1, 4));
+        return false;
+      }
+    }
   });
+
 
   const { form: formData, enhance, allErrors, errors } = form;
 
@@ -154,7 +162,7 @@
   });
 </script>
 
-<form method="POST" use:enhance novalidate>
+<form method="POST" novalidate use:enhance>
   <Field.Group class={cn(step === 1 ? '' : 'hidden')}>
     <Form.Field {form} name="name">
       <Form.Control>
@@ -216,7 +224,7 @@
           <Form.Description>This decides how the battle unfolds.</Form.Description>
 
           <ToggleGroup.Root {...props} type="single" bind:value={$formData.type} class="flex flex-col w-full gap-2" variant="outline" spacing={1}>
-            {#each TYPES as type, index (index)}
+            {#each TYPE_OPTIONS as type, index (index)}
               {@const Icon = type.icon}
               <ToggleGroup.Item
                 value={type.value}
@@ -299,12 +307,12 @@
 
               <Select.Root type="single" name="alignment" bind:value={$formData.alignment}>
                 <Select.Trigger {...props} class="w-full">
-                  {DEADLINE_OPTIONS.find((d) => d.value === $formData.alignment)?.label ?? '-- Select --'}
+                  {ALIGNMENT_OPTIONS.find((d) => d.value === $formData.alignment)?.label ?? '-- Select --'}
                 </Select.Trigger>
                 <Select.Content>
                   <Select.Group>
                     <Select.Label>-- Select --</Select.Label>
-                    {#each DEADLINE_OPTIONS as deadline, index (index)}
+                    {#each ALIGNMENT_OPTIONS as deadline, index (index)}
                       <Select.Item
                         value={deadline.value}
                         label={deadline.label}
@@ -340,14 +348,14 @@
 
     {#if $formData.type === 'todo'}
       <Field.Group>
-        <Form.Field {form} name="dueDateType">
+        <Form.Field {form} name="timeframe">
           <Form.Control>
             {#snippet children({ props })}
               <Form.Label for="duedate">Set a deadline for this quest?</Form.Label>
               <Form.Description>No rush. Leave it open if there's no expiry.</Form.Description>
 
-              <ToggleGroup.Root type="single" bind:value={$formData.dueDateType} class="grid grid-cols-5" variant="outline" spacing={2}>
-                {#each DUEDATE_OPTIONS as ddo, index (index)}
+              <ToggleGroup.Root type="single" bind:value={$formData.timeframe} class="grid grid-cols-5" variant="outline" spacing={2}>
+                {#each TIMEFRAME_OPTIONS as ddo, index (index)}
                   <ToggleGroup.Item
                     value={ddo.value}
                     aria-label={`Toggle due date ${ddo.label}`}
@@ -358,7 +366,7 @@
                 {/each}
               </ToggleGroup.Root>
 
-              {#if $formData.dueDateType === 'custom'}
+              {#if $formData.timeframe === 'custom'}
                 <Calendar
                   type="single"
                   bind:value={duedate}
@@ -387,7 +395,7 @@
             <Form.Description>Tougher battles drop more XP when won.</Form.Description>
 
             <ToggleGroup.Root {...props} type="single" bind:value={$formData.difficulty} class="grid grid-cols-3 mx-auto" variant="outline" spacing={2}>
-              {#each DIFFICULTY as diff, index (index)}
+              {#each DIFFICULTY_OPTIONS as diff, index (index)}
                 <ToggleGroup.Item
                   value={diff.value}
                   aria-label={`Toggle difficulty ${diff.label}`}

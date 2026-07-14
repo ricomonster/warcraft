@@ -4,10 +4,11 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 // Types
 import type { PageServerLoad, Actions } from '$routes/habit/create/$types.js';
+import type { InsertQuest } from '$package/quest';
 
 // Packages
 import { db } from '$package/drizzle/server';
-import { quests, type InsertQuest } from '$package/quest/store/schema';
+import { quests } from '$package/quest/store/schema';
 
 // Schema
 import { createHabitFormSchema } from './../schema';
@@ -58,9 +59,6 @@ export const actions: Actions = {
       remindDaysAt: form.data.remindDaysAt,
       notes: form.data.notes,
       type: form.data.type,
-      days: form.data.days,
-      target: form.data.target,
-      alignment: form.data.alignment,
     };
 
     const result = await db.insert(quests).values(newQuest);

@@ -56,7 +56,6 @@ import {
 
 // Types
 import type { Component } from 'svelte';
-import type { LucideProps } from '@lucide/svelte';
 import type {
   Alignment,
   Day,
