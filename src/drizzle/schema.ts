@@ -1,1 +1,1 @@
-export * from '$package/quest/store';
+export * from '../quest/store/schema';

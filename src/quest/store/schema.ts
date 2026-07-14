@@ -1,10 +1,14 @@
 import { integer, pgTable, serial, text, timestamp, pgEnum, boolean, varchar, time, date } from 'drizzle-orm/pg-core';
 
-export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
-export const typeEnum = pgEnum('type', ['daily', 'habit', 'todo']);
-export const dayEnum = pgEnum('days', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
-export const alignmentEnum = pgEnum('alignment', ['buff', 'nerf', 'none']);
-export const dueDateTypeEnum = pgEnum('due_date_type', ['today', 'tomorrow', '3days', 'next_week', 'custom']);
+// Consts
+import { DIFFICULTY_VALUES, QUEST_TYPE_VALUES, DAY_VALUES, ALIGNMENT_VALUES, TIMEFRAME_VALUES } from '../consts/enum';
+
+// Enums
+export const difficultyEnum = pgEnum('difficulty', DIFFICULTY_VALUES);
+export const typeEnum = pgEnum('type', QUEST_TYPE_VALUES);
+export const dayEnum = pgEnum('days', DAY_VALUES);
+export const alignmentEnum = pgEnum('alignment', ALIGNMENT_VALUES);
+export const timeframeEnum = pgEnum('timeframe', TIMEFRAME_VALUES);
 
 export const quests = pgTable('quests', {
   id: serial('id').primaryKey(),
@@ -21,7 +25,7 @@ export const quests = pgTable('quests', {
   days: dayEnum('days').array(),
   target: integer('target').default(0),
   alignment: alignmentEnum('alignment'),
-  dueDateType: dueDateTypeEnum('due_date_type'),
+  timeframe: timeframeEnum('timeframe'),
   dueDate: date('due_date'),
 
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -29,6 +33,3 @@ export const quests = pgTable('quests', {
     .notNull()
     .$onUpdate(() => new Date()),
 });
-
-export type InsertQuest = typeof quests.$inferInsert;
-export type SelectQuest = typeof quests.$inferSelect;
