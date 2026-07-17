@@ -26,5 +26,10 @@ export type Difficulty = (typeof DIFFICULTY_VALUES)[number];
 export type QuestType = (typeof QUEST_TYPE_VALUES)[number];
 export type TimeFrame = (typeof TIMEFRAME_VALUES)[number];
 
-export type InsertQuest = typeof quests.$inferInsert;
-export type SelectQuest = typeof quests.$inferSelect;
+export type CreateQuest = typeof quests.$inferInsert;
+export type Quest = typeof quests.$inferSelect;
+
+export interface ListQuest {
+  type: QuestType;
+  quests: Quest[];
+}

@@ -1,10 +1,13 @@
+import { alias } from 'drizzle-orm/pg-core';
 import { fail, redirect } from '@sveltejs/kit';
+import { sql, asc } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 // Types
-import type { PageServerLoad, Actions } from '$routes/quest/create/$types.js';
-import type { InsertQuest } from '$package/quest';
+import type { PageServerLoad } from '$routes/quest/$types.js';
+import type { PageServerLoad as CreatePageServerLoad, Actions } from '$routes/quest/create/$types.js';
+import type { CreateQuest, Quest } from '$package/quest';
 
 // Packages
 import { db } from '$package/drizzle/server';
@@ -35,7 +38,21 @@ const DEFAULT_FORM = superValidate(zod4(createQuestFormSchema), {
   }
 });
 
-export const load: PageServerLoad = async () => {
+export const listLoad: PageServerLoad = async () => {
+  const q = alias(quests, 'q');
+
+  return {
+    quests: await db.select({
+      type: q.type,
+      quests: sql<Quest[]>`json_agg(to_jsonb(${q}) ORDER BY ${q.createdAt} DESC)`
+    })
+      .from(q)
+      .groupBy(q.type)
+      .orderBy(asc(q.type))
+  };
+};
+
+export const createLoad: CreatePageServerLoad = async () => {
   return {
     form: await DEFAULT_FORM,
   };
@@ -50,7 +67,7 @@ export const actions: Actions = {
       });
     }
 
-    const newQuest: InsertQuest = {
+    const newQuest: CreateQuest = {
       quest: form.data.quest,
       name: form.data.name,
       color: form.data.color,

@@ -27,6 +27,7 @@ export const quests = pgTable('quests', {
   alignment: alignmentEnum('alignment'),
   timeframe: timeframeEnum('timeframe'),
   dueDate: date('due_date'),
+  completed: boolean('completed').default(false),
 
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at')
