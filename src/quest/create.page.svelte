@@ -8,7 +8,10 @@
 </script>
 
 <script lang="ts">
+  import { CircleQuestionMark } from '@lucide/svelte';
+
   // Packages
+  import { Skeleton } from '$lib/components/ui/skeleton';
   import * as Card from '$lib/components/ui/card';
   import * as Stepper from '$lib/components/ui/stepper';
 
@@ -20,7 +23,8 @@
 
   let icon = $state(ICONS[0].name);
   let currentStep = $state(1);
-  let quest = $state('Quest name');
+  let quest = $state<string>();
+  let loading = $state<boolean>(false);
 
   const handleChangeStep = (step: number): void => {
     currentStep = step;
@@ -67,22 +71,37 @@
           </Stepper.Nav>
 
           <Card.Title class="flex gap-4 items-center">
-            {#each ALL_ICONS as ic, index (index)}
-              {#if ic.name === icon}
-                {@const SelectedIcon = ic.icon}
-                <SelectedIcon />
-              {/if}
-            {/each}
+            {#if loading}
+              <div class="flex items-center space-x-4">
+                <Skeleton class="size-12 rounded-full" />
+                <div class="space-y-2">
+                  <Skeleton class="h-4 w-[250px]" />
+                  <Skeleton class="h-4 w-[200px]" />
+                </div>
+              </div>
+            {:else}
+              {#if quest}
+                {#each ALL_ICONS as ic, index (index)}
+                  {#if ic.name === icon}
+                    {@const SelectedIcon = ic.icon}
+                    <SelectedIcon />
+                  {/if}
+                {/each}
 
-            <span class="text-xl">{quest}</span>
+                <span class="text-xl">{quest}</span>
+              {:else}
+                <CircleQuestionMark class="text-slate-500" />
+                <span class="text-lg text-muted-foreground">Your quest will appear here...</span>
+              {/if}
+            {/if}
           </Card.Title>
         </Card.Header>
         <Card.Content>
           <QuestCreateForm
             form={data.form}
             step={currentStep}
-            onchangestep={handleChangeStep}
-            onquest={(name) => quest = name}/>
+            onloading={(s) => loading = s}
+            onchangestep={handleChangeStep} />
         </Card.Content>
       </Card.Root>
     </div>

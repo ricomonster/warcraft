@@ -1,4 +1,9 @@
 <script lang="ts" module>
+  import type { Quest } from './types';
+
+  interface Props {
+    quest: Quest
+  }
 </script>
 
 <script lang="ts">
@@ -16,11 +21,11 @@
 
   import { ALL_ICONS } from './consts';
 
+  let { quest }: Props = $props();
+
   const index = Math.floor(Math.random() * ALL_ICONS.length);
   const icon = $state(ALL_ICONS[index]);
 
-  const completed = $state(faker.datatype.boolean({ probability: 0.5 }));
-  const title = $state(faker.lorem.words());
   const difficulty = faker.helpers.weightedArrayElement([
     {weight: 1, value: 'easy'},
     {weight: 1, value: 'medium'},
@@ -39,7 +44,7 @@
   <Card.Content>
     <div class="flex items-center gap-4">
       <div class={cn('flex items-center justify-center')}>
-        {#if completed}
+        {#if quest.completed}
           <CircleCheck class="size-8 text-emerald-500" />
         {:else}
           <Circle class="size-8" />
@@ -54,14 +59,15 @@
       </div>
 
       <div class="flex-1">
-        <h3 class={cn('font-bold', completed ? 'line-through text-muted-foreground' : '')}>{title}</h3>
-        <div class="text-muted-foreground">
-          <span>Respawns Mon, Wed, Fri</span>
-        </div>
+        <h3 class={cn('font-bold', quest.completed ? 'line-through text-muted-foreground' : '')}>{quest.quest}</h3>
+        <p class="text-muted-foreground truncate">{quest.name}</p>
+        <!-- <div class="text-muted-foreground"> -->
+        <!--   <span>Respawns Mon, Wed, Fri</span> -->
+        <!-- </div> -->
       </div>
 
       <div class="flex gap-4">
-        <QuestDifficultyBadge value={difficulty} />
+        <QuestDifficultyBadge value={quest.difficulty} />
         <span class="text-green-500">+{xp} XP</span>
       </div>
     </div>

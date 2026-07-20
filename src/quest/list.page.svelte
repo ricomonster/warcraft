@@ -10,17 +10,18 @@
 </script>
 
 <script lang="ts">
-  // Packages
-  import { Badge } from '$lib/components/ui/badge';
-
   import type { ListQuest } from './types';
+
+  // Packages
 
   // Lib
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Card from '$lib/components/ui/card';
+  import { Badge } from '$lib/components/ui/badge';
   import { Progress } from '$lib/components/ui/progress';
 
   import QuestListCard from './list.card.svelte';
+  import QuestTypeLabel from './type.label.svelte';
 
   let { data }: Props = $props();
   let { quests }: { quests: ListQuest[] } = data;
@@ -85,14 +86,21 @@
     </Card.Content>
   </Card.Root>
 
-  <div class="flex flex-col gap-3">
-    {#each quests as ql, index(index)}
-      <div class="">
-        {ql.type}
-        {#each ql.quests as quest, index(index) }
-          <QuestListCard />
-        {/each}
-      </div>
-    {/each}
+  <div class="flex flex-col gap-4">
+    {#if quests.length > 0}
+      {#each quests as ql, index(index)}
+        <div>
+          <QuestTypeLabel
+            class="text-muted-foreground text-sm font-bold py-2"
+            type={ql.type} />
+
+          <div class="flex flex-col gap-3">
+            {#each ql.quests as quest, index(index) }
+              <QuestListCard {quest} />
+            {/each}
+          </div>
+        </div>
+      {/each}
+    {/if}
   </div>
 </section>

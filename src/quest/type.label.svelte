@@ -4,31 +4,49 @@
 
   interface Props {
     type: QuestType
+    class?: string
   }
 </script>
 
 <script lang="ts">
   import { Ghost, Zap, MapPin } from '@lucide/svelte';
 
-  let { type }: Props = $props();
+  // Lib
+  import { cn } from '$lib/utils';
 
-  let icon = $state();
-  let label = $state();
+  let { type, class: className }: Props = $props();
 
-  switch (type) {
-    case 'daily':
-      icon = Ghost;
-      label = 'Recurring foes';
-      break;
+  let icon = $derived.by(() => {
+    switch (type) {
+      case 'daily':
+        return Ghost;
 
-    case 'habit':
-      icon = Zap;
-      label = 'Wielded powers';
-      break;
+      case 'habit':
+        return Zap;
 
-    case 'todo':
-      icon = MapPin;
-      label = 'One-time quests';
-      break;
-  }
+      case 'todo':
+        return MapPin;
+    }
+  });
+
+  let label = $derived.by(() => {
+    switch (type) {
+      case 'daily':
+        return 'Recurring foes';
+
+      case 'habit':
+        return 'Wielded powers';
+
+      case 'todo':
+        return 'One-time quests';
+    }
+  });
 </script>
+
+<p class={cn(className, 'flex gap-2')}>
+  {#if icon}
+    {@const Icon = icon}
+    <Icon />
+  {/if}
+  <span>{label}</span>
+</p>

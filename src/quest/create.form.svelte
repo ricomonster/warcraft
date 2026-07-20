@@ -1,5 +1,4 @@
 <script lang="ts" module>
-  import type { SubmitFunction } from '@sveltejs/kit';
   import {
     type SuperValidated,
     type Infer,
@@ -9,7 +8,8 @@
   import type { z } from 'zod';
 
   // Schema
-  import { createQuestFormSchema, type CreateQuestFormSchema } from './schema';
+  import { createQuestFormSchema} from './schema';
+  import { type CreateQuestFormSchema } from './schema';
 
   type FormSchema = z.infer<typeof createQuestFormSchema>
 
@@ -17,13 +17,14 @@
     form: SuperValidated<Infer<CreateQuestFormSchema>>
     step?: number;
     onchangestep?(step: number): void;
-    onquest?(name: string): void;
+    onquest?(name: string, original: string): void;
+    onloading?(loading: boolean): void;
   }
 
   const STEP_FIELDS: Record<number, FormPathLeaves<FormSchema>[]> = {
-    1: ['name', 'color', 'icon'],
-    2: ['type'],
-    3: ['target', 'alignment', 'timeframe', 'dueDate'],
+    1: ['name', 'type'],
+    2: ['target', 'alignment', 'timeframe', 'dueDate'],
+    3: ['type'],
     4: ['difficulty', 'dailyReminder', 'remindTimeAt']
   };
 </script>
@@ -35,11 +36,13 @@
     Bell,
   } from '@lucide/svelte';
   import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
+  import { startOfDay, differenceInCalendarDays } from 'date-fns';
   import { zod4Client } from 'sveltekit-superforms/adapters';
 
-  // Packages
-  import { questify } from '$package/quest';
+  // Types
+  import type { AssessQuest, AssessDailyQuest, AssessHabitQuest, AssessTODOQuest } from './types';
 
+  // Packages
   // Lib
   import Calendar from '$lib/components/ui/calendar/calendar.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -54,12 +57,10 @@
   import { cn } from '$lib/utils';
 
   // Utils
-  import { formatDayLabel } from './util';
+  import { formatDayLabel } from './utils';
 
   import {
-    COLORS,
     DAYS,
-    ICONS,
     WEEKDAYS,
     TYPE_OPTIONS,
     ALIGNMENT_OPTIONS,
@@ -67,11 +68,28 @@
     DIFFICULTY_OPTIONS,
   } from './consts';
 
-  let { form: initialForm, step = 1, onchangestep, onquest }: Props = $props();
+  let {
+    form: initialForm,
+    step = 1,
+    onchangestep,
+    onloading,
+    onquest
+  }: Props = $props();
+
+  const form = superForm(initialForm, {
+    validators: zod4Client(createQuestFormSchema),
+    dataType: 'json',
+    onSubmit: ({ cancel }) => {
+      if (step !== 4) {
+        cancel();
+        switchStep(Math.min(step + 1, 4));
+        return false;
+      }
+    }
+  });
+  const { form: formData, enhance, errors } = form;
 
   let todayDate = today(getLocalTimeZone());
-
-
   let duedate = $state<CalendarDate | undefined>(new CalendarDate(todayDate.year, todayDate.month, todayDate.day));
 
   const adjustTarget = (event: MouseEvent, delta: number): void => {
@@ -89,7 +107,7 @@
 
     // Validate current step
     if (selected > step) {
-      if (step === 4 && $formData.type === 'daily') {
+      if (step === 3 && $formData.type === 'daily') {
         if (!$formData.days || $formData.days.length === 0) {
           $errors.days = { _errors: ['Select at least one day'] };
           return;
@@ -108,15 +126,67 @@
 
     switch (s) {
       case 2: {
-        // generate questified name
-        if ($formData.quest === '') {
-          $formData.quest = questify($formData.name);
-          onquest?.($formData.quest);
-        }
         break;
       }
 
-      case 3:
+      case 3: {
+        onloading?.(true);
+
+        let body = {
+          name: $formData.name,
+          type: $formData.type,
+        } as AssessQuest;
+
+        switch ($formData.type) {
+          case 'daily':
+            body = {
+              ...body,
+              strikes: $formData.target,
+              days: $formData.days.length,
+            };
+            break;
+
+          case 'habit':
+            body = {
+              ...body,
+              direction: $formData.alignment,
+              target: $formData.target,
+            };
+            break;
+
+          case 'todo': {
+            let daysUntil = 0;
+            if ($formData.dueDate) {
+              const due = new Date($formData.dueDate);
+              if (!isNaN(due.getTime())) {
+                const today = startOfDay(new Date());
+                const target = startOfDay(due);
+
+                daysUntil = differenceInCalendarDays(target, today);
+              }
+            }
+
+            body = {
+              ...body,
+              hasDue: $formData?.timeframe ? true : false ,
+              daysUntil
+            };
+            break;
+          }
+        }
+
+        const result = await fetch('/api/quests/assess', {
+          method: 'POST',
+          body: JSON.stringify(body)
+        });
+
+        const assessment = (await result.json());
+        console.log(assessment);
+
+        onloading?.(false);
+        break;
+      }
+
       case 4:
         break;
     }
@@ -130,21 +200,6 @@
     onchangestep?.(s);
   };
 
-  const form = superForm(initialForm, {
-    validators: zod4Client(createQuestFormSchema),
-    dataType: 'json',
-    onSubmit: ({ cancel }) => {
-      if (step !== 4) {
-        cancel();
-        switchStep(Math.min(step + 1, 4));
-        return false;
-      }
-    }
-  });
-
-
-  const { form: formData, enhance, allErrors, errors } = form;
-
   $effect(() => {
     if ($formData.dailyReminder && !$formData.remindTimeAt) {
       $formData.remindTimeAt = '09:00';
@@ -157,8 +212,6 @@
     if ($formData.type === 'daily' && $formData.days.length < 1) {
       $formData.days = WEEKDAYS;
     }
-
-    console.log($allErrors);
   });
 </script>
 
@@ -171,52 +224,12 @@
           <Form.Description>
             What challenge are you taking on?
           </Form.Description>
-          <Input {...props} type="input" placeholder="Do laundry, read a book" required bind:value={$formData.name} />
+          <Input {...props} type="input" class="h-12" placeholder="Do laundry, read a book" required bind:value={$formData.name} />
           <Form.FieldErrors />
         {/snippet}
       </Form.Control>
     </Form.Field>
 
-    <Form.Field {form} name="color">
-      <Form.Control>
-        {#snippet children({ props })}
-          <Form.Label for="color">Color</Form.Label>
-          <ToggleGroup.Root {...props} type="single" class="flex gap-2" spacing={2} size="sm" bind:value={$formData.color}>
-            {#each COLORS as color, index (index)}
-              <ToggleGroup.Item
-                value={color}
-                aria-label="Toggle star"
-                class="w-8 h-8 rounded-full border-3 border-transparent data-[state=on]:border-foreground"
-                style="background:{color}"
-              />
-            {/each}
-          </ToggleGroup.Root>
-        {/snippet}
-      </Form.Control>
-    </Form.Field>
-
-    <Form.Field {form} name="icon">
-      <Form.Control>
-        {#snippet children({ props })}
-          <Form.Label for="icon">Icon</Form.Label>
-          <ToggleGroup.Root {...props} type="single" class="flex flex-wrap gap-2" spacing={2} size="sm" variant="outline" bind:value={$formData.icon}>
-            {#each ICONS as icon, index (index)}
-              {@const Icon = icon.icon}
-              <ToggleGroup.Item value={icon.name}>
-                <Icon />
-              </ToggleGroup.Item>
-            {/each}
-          </ToggleGroup.Root>
-        {/snippet}
-      </Form.Control>
-    </Form.Field>
-
-    <div class="ml-auto">
-      <Button onclick={(e) => {e.preventDefault(); switchStep(2);}}>Next</Button>
-    </div>
-  </Field.Group>
-
-  <Field.Group class={cn(step === 2 ? '' : 'hidden')}>
     <Form.Field {form} name="type">
       <Form.Control>
         {#snippet children({ props })}
@@ -245,13 +258,12 @@
       </Form.Control>
     </Form.Field>
 
-    <div class="flex justify-between items-center">
-      <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(1);}}>Previous</Button>
-      <Button onclick={(e) => {e.preventDefault(); switchStep(3);}}>Next</Button>
+    <div class="ml-auto">
+      <Button onclick={(e) => {e.preventDefault(); switchStep(2);}}>Next</Button>
     </div>
   </Field.Group>
 
-  <div class={cn(step === 3 ? '' : 'hidden')}>
+  <div class={cn(step === 2 ? '' : 'hidden')}>
     {#if $formData.type === 'daily'}
       <Field.Group>
         <Form.Field {form} name="days">
@@ -380,6 +392,13 @@
       </Field.Group>
     {/if}
 
+    <div class="flex justify-between items-center mt-6">
+      <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(1);}}>Previous</Button>
+      <Button onclick={(e) => {e.preventDefault(); switchStep(3);}}>Next</Button>
+    </div>
+  </div>
+
+  <div class={cn(step === 3 ? '' : 'hidden')}>
     <div class="flex justify-between items-center mt-6">
       <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(2);}}>Previous</Button>
       <Button onclick={(e) => {e.preventDefault(); switchStep(4);}}>Next</Button>

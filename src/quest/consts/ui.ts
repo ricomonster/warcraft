@@ -290,7 +290,7 @@ export const TEMPLATES: Template[] = [
   },
 ];
 
-export const COLORS = ['#1D9E75', '#7F77DD', '#D85A30', '#BA7517', '#378ADD', '#D4537E'] as const;
+// export const COLORS = ['#1D9E75', '#7F77DD', '#D85A30', '#BA7517', '#378ADD', '#D4537E'] as const;
 
 export const DAYS = [
   {name: 'M', value: 'monday'},

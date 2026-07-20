@@ -33,3 +33,30 @@ export interface ListQuest {
   type: QuestType;
   quests: Quest[];
 }
+
+interface AssessBaseQuest {
+  name: string;
+  type: QuestType;
+}
+
+export interface AssessDailyQuest extends AssessBaseQuest {
+  strikes: number;
+  days: number;
+}
+
+export interface AssessHabitQuest extends AssessBaseQuest {
+  direction: Alignment;
+  target: number;
+}
+
+export interface AssessTODOQuest extends AssessBaseQuest {
+  hasDue: boolean;
+  daysUntil: number | null;
+}
+
+export type AssessQuest = AssessDailyQuest | AssessHabitQuest | AssessTODOQuest
+
+export interface QuestAssessment {
+  icon: string;
+  color: string;
+}
