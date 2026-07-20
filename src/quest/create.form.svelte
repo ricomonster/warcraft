@@ -31,30 +31,34 @@
 
 <script lang="ts">
   import {
-    Plus,
-    Minus,
     Bell,
+    Minus,
+    Plus,
+    SquarePen,
   } from '@lucide/svelte';
   import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
   import { startOfDay, differenceInCalendarDays } from 'date-fns';
   import { zod4Client } from 'sveltekit-superforms/adapters';
 
   // Types
-  import type { AssessQuest, AssessDailyQuest, AssessHabitQuest, AssessTODOQuest } from './types';
+  import type { AssessQuest } from './types';
 
   // Packages
   // Lib
-  import Calendar from '$lib/components/ui/calendar/calendar.svelte';
-  import { Button } from '$lib/components/ui/button';
-  import { Input } from '$lib/components/ui/input';
-  import { Switch } from '$lib/components/ui/switch';
-  import { Textarea } from '$lib/components/ui/textarea';
   import * as Card from '$lib/components/ui/card';
   import * as Field from '$lib/components/ui/field';
   import * as Form from '$lib/components/ui/form';
   import * as Select from '$lib/components/ui/select';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
+  import Calendar from '$lib/components/ui/calendar/calendar.svelte';
+  import { Badge } from '$lib/components/ui/badge';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import { Switch } from '$lib/components/ui/switch';
+  import { Textarea } from '$lib/components/ui/textarea';
   import { cn } from '$lib/utils';
+
+  import AssessmentCard from './assessment.card.svelte';
 
   // Utils
   import { formatDayLabel } from './utils';
@@ -76,6 +80,19 @@
     onquest
   }: Props = $props();
 
+  let assessment = {
+    'icon': 'brush_cleaning',
+    'color': 'blue',
+    'difficulty': 'hard',
+    'difficultyReason': 'The task is due today and requires immediate, repetitive effort to clear the backlog.',
+    'questNames': {
+      'combat': 'Slay Ashen Wraith',
+      'trial': 'Endure Forsaken Abyss',
+      'discovery': 'Claim Eternal Relic'
+    },
+    'topPick': 'combat'
+  };
+
   const form = superForm(initialForm, {
     validators: zod4Client(createQuestFormSchema),
     dataType: 'json',
@@ -87,6 +104,7 @@
       }
     }
   });
+
   const { form: formData, enhance, errors } = form;
 
   let todayDate = today(getLocalTimeZone());
@@ -399,6 +417,8 @@
   </div>
 
   <div class={cn(step === 3 ? '' : 'hidden')}>
+    <AssessmentCard />
+
     <div class="flex justify-between items-center mt-6">
       <Button variant="secondary" onclick={(e) => {e.preventDefault(); switchStep(2);}}>Previous</Button>
       <Button onclick={(e) => {e.preventDefault(); switchStep(4);}}>Next</Button>

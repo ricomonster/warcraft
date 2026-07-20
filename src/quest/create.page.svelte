@@ -22,7 +22,7 @@
   let { data }: Props = $props();
 
   let icon = $state(ICONS[0].name);
-  let currentStep = $state(1);
+  let currentStep = $state(3);
   let quest = $state<string>();
   let loading = $state<boolean>(false);
 

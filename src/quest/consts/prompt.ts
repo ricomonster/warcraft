@@ -1,4 +1,19 @@
-const SYSTEM_PROMPT = `
+import { ALL_ICONS } from './ui';
+
+export const COLORS= [
+  { name: 'coral',  token: 'orange-500', best_for: 'fitness, energy, action'  },
+  { name: 'purple', token: 'violet-500', best_for: 'mind, learning, creativity' },
+  { name: 'teal',   token: 'emerald-500',best_for: 'health, nature, wellness'   },
+  { name: 'amber',  token: 'amber-500',  best_for: 'rest, mindfulness, caution' },
+  { name: 'blue',   token: 'blue-500',   best_for: 'productivity, focus, tech'  },
+  { name: 'pink',   token: 'pink-500',   best_for: 'social, emotion, gratitude' },
+];
+
+const COLOR_HINTS = COLORS
+  .map(c => `${c.name}(${c.best_for})`)
+  .join(', ');
+
+export const SYSTEM_PROMPT = `
 You are a quest naming scribe for a dark fantasy RPG habit tracker.
 Transform any habit or task into epic, lore-appropriate quest names.
 
@@ -35,14 +50,39 @@ RULES — apply to every habit regardless of category:
    - Passive / accumulative / reward tasks → discovery
 `;
 
-export const COLORS= [
-  { name: 'coral',  token: 'orange-500', best_for: 'fitness, energy, action'  },
-  { name: 'purple', token: 'violet-500', best_for: 'mind, learning, creativity' },
-  { name: 'teal',   token: 'emerald-500',best_for: 'health, nature, wellness'   },
-  { name: 'amber',  token: 'amber-500',  best_for: 'rest, mindfulness, caution' },
-  { name: 'blue',   token: 'blue-500',   best_for: 'productivity, focus, tech'  },
-  { name: 'pink',   token: 'pink-500',   best_for: 'social, emotion, gratitude' },
-];
+export const INSTRUCTION_PROMPT = `
+Difficulty notes for this type:
+- More strikes per day = harder
+- More days per week = harder
+- 7 days/week with 5+ strikes = almost always hard
+- Once per day, 3 days/week = lean easy or medium
+- Name itself carries weight ("run" > "drink water")
+
+Quest name rules:
+- Generate 3 variants using the templates below
+- Each NOUN must be a fantasy entity (creature, place, relic)
+- No word from ":name" may appear in any quest name
+- Evoke the emotional quality of the task, not its literal meaning
+- Each variant must use a completely different NOUN
+- Fantasy vocabulary only — 2 to 4 words per NOUN phrase
+
+Icons (pick one): ${ALL_ICONS.map((a) => a.name).join(', ')}
+Colors (pick one): ${COLOR_HINTS}
+
+Return ONLY this JSON:
+{
+  "icon":              string,
+  "color":             string,
+  "difficulty":        "easy" | "medium" | "hard",
+  "difficultyReason": string,
+  "questNames": {
+    "combat":    string,
+    "trial":     string,
+    "discovery": string
+  },
+  "topPick": "combat" | "trial" | "discovery"
+}
+`;
 
 export const ASSESSMENT_JSON_SCHEMA: Record<string, unknown> = {
   type: 'object',
@@ -50,8 +90,8 @@ export const ASSESSMENT_JSON_SCHEMA: Record<string, unknown> = {
     icon: { type: 'string', description: 'Icon name from the provided list' },
     color: { type: 'string', description: 'Color name from the provided list' },
     difficulty: { type: 'string', enum: ['easy', 'medium', 'hard'] },
-    difficulty_reason: { type: 'string', description: 'Brief justification for the difficulty choice' },
-    quest_names: {
+    difficultyReason: { type: 'string', description: 'Brief justification for the difficulty choice' },
+    questNames: {
       type: 'object',
       properties: {
         combat: { type: 'string', description: 'Quest name in combat style: "Defeat the X"' },
@@ -60,11 +100,11 @@ export const ASSESSMENT_JSON_SCHEMA: Record<string, unknown> = {
       },
       required: ['combat', 'trial', 'discovery'],
     },
-    top_pick: {
+    topPick: {
       type: 'string',
       enum: ['combat', 'trial', 'discovery'],
       description: 'Best matching quest style for this habit',
     },
   },
-  required: ['icon', 'color', 'difficulty', 'difficulty_reason', 'quest_names', 'top_pick'],
+  required: ['icon', 'color', 'difficulty', 'difficultyReason', 'questNames', 'topPick'],
 };

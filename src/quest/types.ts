@@ -56,7 +56,28 @@ export interface AssessTODOQuest extends AssessBaseQuest {
 
 export type AssessQuest = AssessDailyQuest | AssessHabitQuest | AssessTODOQuest
 
+export type QuestStyle = 'combat' | 'trial' | 'discovery'
+
+export type QuestNamesAssessment = Record<QuestStyle, string>;
+
 export interface QuestAssessment {
   icon: string;
   color: string;
+  difficulty: Difficulty;
+  difficultyReason: string;
+  questNames: QuestNamesAssessment;
+  topPick: QuestStyle;
 }
+
+// {
+//   "icon": "scroll",
+//   "color": "purple",
+//   "difficulty": "hard",
+//   "difficulty_reason": "The task involves significant creative effort and structural revision of a complex narrative or conceptual foundation.",
+//   "quest_names": {
+//     "combat": "Defeat the Shattered Obelisk",
+//     "trial": "The Ancient Cipher Trial",
+//     "discovery": "Claim the Forbidden Manuscript"
+//   },
+//   "top_pick": "trial"
+// }
