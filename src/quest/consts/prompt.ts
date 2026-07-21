@@ -1,12 +1,25 @@
 import { ALL_ICONS } from './ui';
 
-export const COLORS= [
-  { name: 'coral',  token: 'orange-500', best_for: 'fitness, energy, action'  },
-  { name: 'purple', token: 'violet-500', best_for: 'mind, learning, creativity' },
-  { name: 'teal',   token: 'emerald-500',best_for: 'health, nature, wellness'   },
-  { name: 'amber',  token: 'amber-500',  best_for: 'rest, mindfulness, caution' },
-  { name: 'blue',   token: 'blue-500',   best_for: 'productivity, focus, tech'  },
-  { name: 'pink',   token: 'pink-500',   best_for: 'social, emotion, gratitude' },
+export const COLORS = [
+  { name: 'red',     text: 'text-red-500',     bg: 'bg-red-500',     best_for: 'danger, urgency, strength' },
+  { name: 'orange',  text: 'text-orange-500',  bg: 'bg-orange-500',  best_for: 'fitness, energy, action' },
+  { name: 'amber',   text: 'text-amber-500',   bg: 'bg-amber-500',   best_for: 'rest, mindfulness, caution' },
+  { name: 'yellow',  text: 'text-yellow-500',  bg: 'bg-yellow-500',  best_for: 'glory, reward, radiance' },
+  { name: 'lime',    text: 'text-lime-500',    bg: 'bg-lime-500',    best_for: 'growth, nature, vitality' },
+  { name: 'green',   text: 'text-green-500',   bg: 'bg-green-500',   best_for: 'health, nature, wellness' },
+  { name: 'emerald', text: 'text-emerald-500', bg: 'bg-emerald-500', best_for: 'wealth, nature, renewal' },
+  { name: 'teal',    text: 'text-teal-500',    bg: 'bg-teal-500',    best_for: 'healing, balance, wisdom' },
+  { name: 'cyan',    text: 'text-cyan-500',    bg: 'bg-cyan-500',    best_for: 'magic, illusion, mystery' },
+  { name: 'sky',     text: 'text-sky-500',     bg: 'bg-sky-500',     best_for: 'sky, freedom, exploration' },
+  { name: 'blue',    text: 'text-blue-500',    bg: 'bg-blue-500',    best_for: 'productivity, focus, tech' },
+  { name: 'indigo',  text: 'text-indigo-500',  bg: 'bg-indigo-500',  best_for: 'discipline, order, ritual' },
+  { name: 'violet',  text: 'text-violet-500',  bg: 'bg-violet-500',  best_for: 'mind, learning, creativity' },
+  { name: 'purple',  text: 'text-purple-500',  bg: 'bg-purple-500',  best_for: 'arcane, royalty, mystery' },
+  { name: 'fuchsia', text: 'text-fuchsia-500', bg: 'bg-fuchsia-500', best_for: 'chaos, transformation, passion' },
+  { name: 'pink',    text: 'text-pink-500',    bg: 'bg-pink-500',    best_for: 'social, emotion, gratitude' },
+  { name: 'rose',    text: 'text-rose-500',    bg: 'bg-rose-500',    best_for: 'love, sacrifice, devotion' },
+  { name: 'stone',   text: 'text-stone-500',   bg: 'bg-stone-500',   best_for: 'endurance, earth, grit' },
+  { name: 'slate',   text: 'text-slate-500',   bg: 'bg-slate-500',   best_for: 'shadow, gloom, the unknown' },
 ];
 
 const COLOR_HINTS = COLORS

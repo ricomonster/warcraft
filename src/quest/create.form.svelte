@@ -40,7 +40,7 @@
   import { zod4Client } from 'sveltekit-superforms/adapters';
 
   // Types
-  import type { AssessQuest } from './types';
+  import type { AssessQuest, Difficulty } from './types';
 
   // Packages
   // Lib
@@ -77,19 +77,6 @@
     onloading,
     onquest
   }: Props = $props();
-
-  let assessment = {
-    'icon': 'brush_cleaning',
-    'color': 'blue',
-    'difficulty': 'hard',
-    'difficultyReason': 'The task is due today and requires immediate, repetitive effort to clear the backlog.',
-    'questNames': {
-      'combat': 'Slay Ashen Wraith',
-      'trial': 'Endure Forsaken Abyss',
-      'discovery': 'Claim Eternal Relic'
-    },
-    'topPick': 'combat'
-  };
 
   const form = superForm(initialForm, {
     validators: zod4Client(createQuestFormSchema),
@@ -432,7 +419,19 @@
             <Form.Label for="difficulty">How tough is this foe?</Form.Label>
             <Form.Description>Tougher battles drop more XP when won.</Form.Description>
 
-            <ToggleGroup.Root {...props} type="single" bind:value={$formData.difficulty} class="grid grid-cols-3 mx-auto" variant="outline" spacing={2}>
+            <ToggleGroup.Root
+              {...props}
+              value={$formData.difficulty}
+              class="grid grid-cols-3 mx-auto"
+              onValueChange={(v) => {
+                if (v) {
+                  $formData.difficulty = v as Difficulty;
+                }
+              }}
+              spacing={2}
+              type="single"
+              variant="outline"
+            >
               {#each DIFFICULTY_OPTIONS as diff, index (index)}
                 <ToggleGroup.Item
                   value={diff.value}

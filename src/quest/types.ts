@@ -65,7 +65,7 @@ export type QuestStyle = 'combat' | 'trial' | 'discovery'
 export type QuestNamesAssessment = Record<QuestStyle, string>;
 
 export interface QuestAssessment {
-  icon: string;
+  icon: Icon;
   color: string;
   difficulty: Difficulty;
   difficultyReason: string;
