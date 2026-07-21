@@ -1,4 +1,5 @@
-// Store
+// Types
+import type { Component } from 'svelte';
 import type { quests } from './store';
 
 // Consts
@@ -7,25 +8,11 @@ import type {
   QUEST_TYPE_VALUES,
   DAY_VALUES,
   ALIGNMENT_VALUES,
-  TIMEFRAME_VALUES
+  TIMEFRAME_VALUES,
+  ICON_NAMES
 } from './consts';
 
-type NounTriplet = [string, string, string]
-
-export interface Template {
-  style:  'Combat' | 'Trial' | 'Discovery'
-  icon:   '⚔' | '🏛' | '🔮'
-  color:  string
-  bg:     string
-  fn:     (nouns: NounTriplet) => string
-}
-
-export type Alignment = (typeof ALIGNMENT_VALUES)[number];
-export type Day = (typeof DAY_VALUES)[number];
-export type Difficulty = (typeof DIFFICULTY_VALUES)[number];
-export type QuestType = (typeof QUEST_TYPE_VALUES)[number];
-export type TimeFrame = (typeof TIMEFRAME_VALUES)[number];
-
+// START: Data
 export type CreateQuest = typeof quests.$inferInsert;
 export type Quest = typeof quests.$inferSelect;
 
@@ -33,7 +20,25 @@ export interface ListQuest {
   type: QuestType;
   quests: Quest[];
 }
+// END: Data
 
+// START: Consts -> Type
+export type Alignment = (typeof ALIGNMENT_VALUES)[number];
+export type Day = (typeof DAY_VALUES)[number];
+export type Difficulty = (typeof DIFFICULTY_VALUES)[number];
+export type QuestType = (typeof QUEST_TYPE_VALUES)[number];
+export type TimeFrame = (typeof TIMEFRAME_VALUES)[number];
+export type Icon = (typeof ICON_NAMES)[number];
+// END: Consts -> Type
+
+// START: UI Consts Types
+export interface IconSetting {
+  name: Icon
+  icon: Component
+}
+// END: UI Consts Types
+
+// START: API
 interface AssessBaseQuest {
   name: string;
   type: QuestType;
@@ -57,7 +62,6 @@ export interface AssessTODOQuest extends AssessBaseQuest {
 export type AssessQuest = AssessDailyQuest | AssessHabitQuest | AssessTODOQuest
 
 export type QuestStyle = 'combat' | 'trial' | 'discovery'
-
 export type QuestNamesAssessment = Record<QuestStyle, string>;
 
 export interface QuestAssessment {
@@ -68,16 +72,5 @@ export interface QuestAssessment {
   questNames: QuestNamesAssessment;
   topPick: QuestStyle;
 }
+// END: API
 
-// {
-//   "icon": "scroll",
-//   "color": "purple",
-//   "difficulty": "hard",
-//   "difficulty_reason": "The task involves significant creative effort and structural revision of a complex narrative or conceptual foundation.",
-//   "quest_names": {
-//     "combat": "Defeat the Shattered Obelisk",
-//     "trial": "The Ancient Cipher Trial",
-//     "discovery": "Claim the Forbidden Manuscript"
-//   },
-//   "top_pick": "trial"
-// }

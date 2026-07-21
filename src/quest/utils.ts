@@ -3,17 +3,11 @@ import type { Day, AssessDailyQuest, AssessHabitQuest, AssessTODOQuest } from '.
 
 // Consts
 import {
-  ALL_ICONS,
-  COLORS,
   DAY_SHORT,
   INSTRUCTION_PROMPT,
   WEEKDAY_SET,
   WEEKEND_SET,
 } from './consts';
-
-const COLOR_HINTS = COLORS
-  .map(c => `${c.name}(${c.best_for})`)
-  .join(', ');
 
 /**
  * Determines if the days passed were weekend, weekdays, or

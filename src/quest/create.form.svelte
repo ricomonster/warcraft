@@ -34,7 +34,6 @@
     Bell,
     Minus,
     Plus,
-    SquarePen,
   } from '@lucide/svelte';
   import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
   import { startOfDay, differenceInCalendarDays } from 'date-fns';
@@ -51,7 +50,6 @@
   import * as Select from '$lib/components/ui/select';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
   import Calendar from '$lib/components/ui/calendar/calendar.svelte';
-  import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Switch } from '$lib/components/ui/switch';
@@ -397,11 +395,12 @@
               </ToggleGroup.Root>
 
               {#if $formData.timeframe === 'custom'}
-                <Calendar
-                  type="single"
-                  bind:value={duedate}
-                  class="bg-transparent p-0 [--cell-size:--spacing(9.5)] mx-auto"
-                />
+                <div class="flex justify-center w-full">
+                  <Calendar
+                    type="single"
+                    bind:value={duedate}
+                    class="bg-transparent p-0 [--cell-size:--spacing(9.5)]" />
+                </div>
               {/if}
               <input type="hidden" bind:value={$formData.dueDate} {...props} />
             {/snippet}
