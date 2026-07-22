@@ -52,6 +52,10 @@ import {
   Star,
   Flame,
   Shield,
+
+  Swords,
+  Landmark,
+  Sparkles
 } from '@lucide/svelte';
 
 // Types
@@ -63,6 +67,7 @@ import type {
   QuestType,
   TimeFrame,
   IconSetting,
+  QuestStyle,
 } from './../types';
 
 export const ALL_ICONS: IconSetting[] = [
@@ -173,6 +178,12 @@ export const DIFFICULTY_OPTIONS:  { label: string; value: Difficulty }[] = [
   {label: 'Easy', value: 'easy'},
   {label: 'Medium', value: 'medium'},
   {label: 'Hard', value: 'hard'},
+];
+
+export const QUEST_STYLE_OPTIONS: { value: QuestStyle, label: string; icon: Component }[] = [
+  { value: 'combat',    label: 'Combat style',    icon: Swords   },
+  { value: 'trial',     label: 'Trial style',     icon: Landmark },
+  { value: 'discovery', label: 'Discovery style', icon: Sparkles },
 ];
 
 export const DAYS = [

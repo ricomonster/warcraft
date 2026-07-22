@@ -27,8 +27,8 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Trigger type="button" class={buttonVariants({ variant: 'outline', size: 'xs' })}
-  ><SquarePen /></Dialog.Trigger>
+  <Dialog.Trigger type="button" class={buttonVariants({ variant: 'ghost', size: 'icon-xs' })}
+  ><SquarePen class="size-3" /></Dialog.Trigger>
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Icon</Dialog.Title>
