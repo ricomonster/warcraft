@@ -5,7 +5,7 @@
   import { SquarePen, CircleCheck, Circle } from '@lucide/svelte';
 
   // Types
-  import type { Difficulty, QuestAssessment } from './types';
+  import type { Difficulty, QuestAssessment, QuestStyle } from './types';
 
   // Lib
   import * as Card from '$lib/components/ui/card';
@@ -37,7 +37,9 @@
   let difficulty = $state(assessment.difficulty);
 
   const handleQuestNameSelect = (style: string): void => {
-    console.log(style);
+    if (style) {
+      questStyle = style as QuestStyle;
+    }
   };
 </script>
 
@@ -51,7 +53,10 @@
           <span class="capitalize">{assessment.icon.replace('_', ' ')}</span>
         </Card.Title>
         <Card.Action>
-          <QuestIconDialog icon={assessment.icon} onchange={(i) => assessment.icon = i} />
+          <QuestIconDialog
+            color={assessment.color}
+            icon={assessment.icon}
+            onchange={(i) => assessment.icon = i} />
         </Card.Action>
       </Card.Header>
     </Card.Root>
@@ -116,7 +121,7 @@
         onValueChange={handleQuestNameSelect}
         spacing={2}
         type="single"
-        bind:value={questStyle}
+        value={questStyle}
         variant="outline"
       >
         {#each QUEST_STYLE_OPTIONS as style, index(index)}

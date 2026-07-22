@@ -40,7 +40,7 @@
   import { zod4Client } from 'sveltekit-superforms/adapters';
 
   // Types
-  import type { AssessQuest, Difficulty } from './types';
+  import type { QuestAssessment, AssessQuest, Difficulty } from './types';
 
   // Packages
   // Lib
@@ -94,6 +94,7 @@
 
   let todayDate = today(getLocalTimeZone());
   let duedate = $state<CalendarDate | undefined>(new CalendarDate(todayDate.year, todayDate.month, todayDate.day));
+  let assessment = $state<QuestAssessment|undefined>();
 
   const adjustTarget = (event: MouseEvent, delta: number): void => {
     event.preventDefault();
@@ -183,9 +184,7 @@
           body: JSON.stringify(body)
         });
 
-        const assessment = (await result.json());
-        console.log(assessment);
-
+        assessment = (await result.json());
         onloading?.(false);
         break;
       }

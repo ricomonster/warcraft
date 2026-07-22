@@ -4,6 +4,7 @@
 
   interface Props {
     icon: Icon
+    color?: string
     onchange?(icon: Icon): void
   }
 </script>
@@ -21,7 +22,7 @@
   // Consts
   import { ALL_ICONS } from './consts';
 
-  let { icon, onchange }: Props = $props();
+  let { icon, color, onchange }: Props = $props();
 
   let open = $state(false);
 </script>
@@ -35,7 +36,7 @@
     </Dialog.Header>
 
     <div class="flex justify-center">
-      <QuestIcon class="size-20" {icon} />
+      <QuestIcon class="size-20" {icon} {color} />
     </div>
 
     <ToggleGroup.Root
